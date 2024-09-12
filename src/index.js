@@ -9,39 +9,42 @@ import { initializeFaro, getWebInstrumentations } from '@grafana/faro-web-sdk';
 import { FetchTransport } from '@grafana/faro-web-sdk';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
-// Initialize Grafana Faro with optimized settings to reduce network noise
+// Initialize Grafana Faro with optimized settings
 console.log('Initializing Grafana Faro...');
 export const faroInstance = initializeFaro({
   app: {
     name: 'FrontendApp',
     version: '1.0.0',
   },
+  // Enable batching of events to reduce network noise.
   batching: {
-    enabled: true,
-    limit: 100,  // Batch more events before sending
-    interval: 300000,  // Set batching interval to 5 minutes (300,000ms) to reduce network requests
+    enabled: true, // Enable batching to reduce the frequency of network calls
+    limit: 100, // Send events in batches of 100
+    interval: 300000, // Set batching interval to 5 minutes (300,000ms)
   },
   sessionTracking: {
-    enabled: true,  
+    enabled: true, // Track session data (you can disable this if not needed)
   },
   instrumentations: [
+    // Enable Core Web Vitals, Network Monitoring, and Custom Tracing Instrumentation
     ...getWebInstrumentations({
-      enablePerformanceInstrumentation: false,  // Disable resource and performance tracking to reduce noise
+      enablePerformanceInstrumentation: true, // Enables performance monitoring, such as network activity
+      enableResourceInstrumentation: true, // Tracks resources such as images and script loading
     }),
-    new TracingInstrumentation({ propagateTraceContext: true }),  // Enable tracing instrumentation for custom traces
+    new TracingInstrumentation({ propagateTraceContext: true }), // Enables trace propagation
   ],
   transports: [
     new FetchTransport({
       url: 'https://<OBSERVE_CUSTOMER_ID>.collect.observeinc.com/v1/http?source=faro',
       requestOptions: {
         headers: {
-          'Authorization': 'Bearer <OBSERVE_API_TOKEN>',
+          'Authorization': 'Bearer <OBSERVE_API_TOKEN>', // Add your Observe API Token
         },
       },
+      // Filtering events: only keep logs, errors, custom measurements, and traces
       beforeSend: (events) => {
-        // Filter out non-essential events (e.g., resource events), only send logs, errors, and traces
         return events.filter(event => 
-          ['log', 'error', 'measurement', 'trace'].includes(event.domain)  // Keep only logs, errors, custom measurements, and traces
+          ['log', 'error', 'measurement', 'trace'].includes(event.domain)  // Send only these domains
         );
       },
       onError: (error) => {
@@ -64,9 +67,9 @@ reportWebVitals((metric) => {
 
   try {
     faroInstance.api.pushMeasurement({
-      type: 'web_vital',
+      type: 'web_vital', // Event type: web vital
       values: {
-        [name]: value,  // Use the metric name as the key
+        [name]: value,  // Use the metric name as the key (e.g., LCP, FID, CLS)
       },
       meta: {
         id,
@@ -79,51 +82,35 @@ reportWebVitals((metric) => {
   }
 });
 
-// // Add button to trigger a custom trace
-// window.onload = () => {
-//   const button = document.createElement('button');
-//   button.innerHTML = 'Click me to generate a trace';
-//   button.id = 'traceButton';
-//   document.body.appendChild(button);
+// Custom function to collect system metrics (CPU, memory) periodically
+function pushSystemMetrics() {
+  try {
+    // Example function to collect memory usage (requires implementation)
+    const memoryUsage = getMemoryUsage();  // Define this function for memory metrics
+    faroInstance.api.pushMeasurement({
+      type: 'system_metrics',
+      values: {
+        memoryUsage,
+      },
+    });
+    console.log('Pushed system metrics');
+  } catch (error) {
+    console.error('Error pushing system metrics:', error);
+  }
+}
 
-//   button.addEventListener('click', () => {
-//     try {
-//       faroInstance.api.pushLog([{
-//         level: 'info',
-//         message: 'User clicked the button',
-//         attributes: {
-//           interaction: 'buttonClick',
-//         },
-//       }]);
-//       console.log('Button clicked, log sent.');
-//     } catch (error) {
-//       console.error('Error pushing log:', error);
-//     }
-//   });
-// };
+// Example of how to collect memory usage
+function getMemoryUsage() {
+  if (window.performance && window.performance.memory) {
+    return (window.performance.memory.usedJSHeapSize / window.performance.memory.totalJSHeapSize).toFixed(2); // Memory usage percentage
+  }
+  return 0; // Return 0 if memory API is not supported
+}
 
-// // Send periodic custom metrics (e.g., memory and CPU usage) every minute
-// setInterval(() => {
-//   try {
-//     const memoryUsage = getMemoryUsage();  // Implement this function
-//     faroInstance.api.pushMeasurement({
-//       type: 'system_metrics',
-//       values: {
-//         memoryUsage,
-//       },
-//     });
-//     console.log('Pushed memory usage');
-//   } catch (error) {
-//     console.error('Error pushing system metrics:', error);
-//   }
-// }, 60000);  // Every minute
-
-// // Function to get memory usage (you need to implement this)
-// function getMemoryUsage() {
-//   return window.performance && window.performance.memory
-//     ? window.performance.memory.usedJSHeapSize / window.performance.memory.totalJSHeapSize
-//     : 0;
-// }
+// Periodically send system metrics (every minute)
+setInterval(() => {
+  pushSystemMetrics();
+}, 60000); // Push system metrics every 60 seconds
 
 // Render the React app
 const root = ReactDOM.createRoot(document.getElementById('root'));

@@ -1,70 +1,67 @@
-# Getting Started with Create React App
+# FullStack Tracker Frontend
+
+This is the **frontend submodule** of the **FullStack Tracker** project, designed to track user interactions, capture Core Web Vitals, monitor system metrics, and link frontend traces with backend spans for end-to-end observability. It leverages **Grafana Faro** for frontend instrumentation and **Observe** as the telemetry backend.
+
+For an overview of the entire project and the backend setup, please visit the main repository here: [FullStack Tracker Main Repository](https://github.com/obs-gh-jaydave/FullStack_Tracker/blob/main/README.MD).
+
+## Features
+
+- **Core Web Vitals Tracking**: Automatically captures and reports metrics such as First Input Delay (FID), Largest Contentful Paint (LCP), and Cumulative Layout Shift (CLS).
+- **Custom User Tracing**: Allows custom traces for user interactions, network activity, and system performance, which are correlated with backend spans.
+- **System Metrics Observation**: Captures frontend-specific system metrics like memory and CPU usage.
+- **Network Activity Monitoring**: Tracks network requests from the browser and associates them with user activities.
+
+## Project Structure
+
+This submodule focuses on the **React** frontend of the FullStack Tracker project:
+- `src/`: Contains all the React components and logic for telemetry.
+- `index.js`: Initializes Grafana Faro SDK and defines observability configuration for sending telemetry to **Observe**.
+
+## Getting Started
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+### Available Scripts
 
 In the project directory, you can run:
 
-### `npm start`
+#### `npm start`
+Runs the app in the development mode. Open [http://localhost:3000](http://localhost:3000) to view it in the browser. The app will reload if you make edits, and any lint errors will be visible in the console.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+#### `npm test`
+Launches the test runner in the interactive watch mode. You can configure tests in the `src/` folder.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+#### `npm run build`
+Builds the app for production to the `build` folder. It bundles React in production mode and optimizes the build for better performance. The app is now ready for deployment.
 
-### `npm test`
+#### `npm run eject`
+If you need to customize the build process further, you can run this command to expose all configuration files. **This operation is irreversible!**
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Integration with Observe
 
-### `npm run build`
+This project uses **Grafana Faro** and **Observe** to capture frontend traces, logs, and metrics. Make sure to configure your **Observe** credentials in the following files:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. **`src/index.js`**:
+   - Update your **Observe** customer ID and API token in the Grafana Faro `initializeFaro` call.
+   - This allows you to send Core Web Vitals, custom traces, and frontend logs to Observe.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```js
+new FetchTransport({
+  url: 'https://<OBSERVE_CUSTOMER_ID>.collect.observeinc.com/v1/http?source=faro',
+  requestOptions: {
+    headers: {
+      'Authorization': 'Bearer <OBSERVE_API_TOKEN>',
+    },
+  },
+});
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+2. For a full setup and connection with the backend, refer to the main repository [FullStack Tracker Main README](https://github.com/obs-gh-jaydave/FullStack_Tracker/blob/main/README.MD).
 
 ## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+To learn more about **React**, visit the [React documentation](https://reactjs.org/).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+For further details on **Create React App**, check out the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+If you need help setting up **Observe**, visit their official documentation [here](https://docs.observeinc.com/).
